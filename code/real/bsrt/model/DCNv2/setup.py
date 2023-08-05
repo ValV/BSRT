@@ -2,13 +2,11 @@
 
 import glob
 import os
-
-from setuptools import find_packages, setup
+import sys
 
 import torch
-
+from setuptools import find_packages, setup
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
-
 
 requirements = ["torch", "torchvision"]
 
@@ -27,7 +25,7 @@ def get_extensions():
     extra_compile_args = {"cxx": []}
     define_macros = []
 
-    if torch.cuda.is_available():
+    if torch.cuda.is_available() and CUDA_HOME is not None:
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
@@ -40,6 +38,8 @@ def get_extensions():
     else:
         # raise NotImplementedError('Cuda is not available')
         pass
+    
+    extra_compile_args['cxx'].append('-fopenmp')
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
     include_dirs = [extensions_dir]
@@ -61,7 +61,12 @@ setup(
     author="charlesshang",
     url="https://github.com/charlesshang/DCNv2",
     description="deformable convolutional networks",
-    packages=find_packages(exclude=("configs", "tests")),
+    packages=find_packages(
+        exclude=(
+            "configs",
+            "tests",
+        )
+    ),
     # install_requires=requirements,
     ext_modules=get_extensions(),
     cmdclass={"build_ext": torch.utils.cpp_extension.BuildExtension},
