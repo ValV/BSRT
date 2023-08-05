@@ -3,9 +3,12 @@
 import glob
 import os
 
-import torch
 from setuptools import find_packages, setup
+
+import torch
+
 from torch.utils.cpp_extension import CUDA_HOME, CppExtension, CUDAExtension
+
 
 requirements = ["torch", "torchvision"]
 
@@ -24,7 +27,7 @@ def get_extensions():
     extra_compile_args = {"cxx": []}
     define_macros = []
 
-    if True:
+    if torch.cuda.is_available():
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
